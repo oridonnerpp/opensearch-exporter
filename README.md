@@ -5,7 +5,7 @@ _Flask_ web server will be launched on your local machine where you can view all
 
 
 The data is set as follows:
-metric{label="value"}
+metric{label="label value"} metric_value 
 
 4 metrics are tracked (Prometheus Gauges), one label is defined - "function" label, for example:
 ```
