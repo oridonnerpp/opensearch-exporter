@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: opensearch-exporter-deployment
+  namespace: mantis-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: opensearch-exporter
+  template:
+    metadata:
+      labels:
+        app: opensearch-exporter
+    spec:
+      serviceAccountName: opensearch-exporter-service-account
+      tolerations:
+      - effect: NoSchedule
+        key: mantis/system
+        operator: Exists
+      containers:
+      - name: opensearch-exporter
+        image: 226228012207.dkr.ecr.us-east-1.amazonaws.com/opensearch-exporter:latest
+        ports:
+        - containerPort: 5000
+        env:
+        - name: QUERY_TIME_RANGE
+          value: "5"
+        - name: QUERY_TIME_LAG
+          value: "20"
+        - name: QUERY_TIME_REFRESH
+          value: "60"
+        - name: opensearch_index
+          value: "ops-logs-*"
+        - name: opensearch_host
+          value: "logs.testing.perception-point.io"
+        - name: opensearch_port
+          value: "443"
+        resources:
+          limits:
+            memory: "256Mi"
+            cpu: "0.5"
+          requests:
+            memory: "128Mi"
+            cpu: "0.1"
