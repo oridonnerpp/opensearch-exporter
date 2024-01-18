@@ -1,3 +1,11 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: opensearch-exporter-service-account
+  namespace: mantis-system
+  annotations: 
+    eks.amazonaws.com/role-arn: arn:aws:iam::226228012207:role/mantis-system-opensearch-exporter-testing
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -25,9 +33,9 @@ spec:
         - containerPort: 5000
         env:
         - name: QUERY_TIME_RANGE
-          value: "5"
+          value: "60"
         - name: QUERY_TIME_LAG
-          value: "20"
+          value: "30"
         - name: QUERY_TIME_REFRESH
           value: "60"
         - name: opensearch_index
