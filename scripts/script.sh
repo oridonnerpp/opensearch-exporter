@@ -12,16 +12,16 @@ sudo docker run \
 pip3 install git+https://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@github.com/perceptionpoint/botosession.git
 
 # upload docker image to ECR
-sudo docker build -t fetch:1.1.0 . 
-sudo docker tag fetch:1.1.0 226228012207.dkr.ecr.us-east-1.amazonaws.com/opensearch-exporter:1.1.0
-sudo docker tag fetch:1.1.0 226228012207.dkr.ecr.us-east-1.amazonaws.com/opensearch-exporter:latest
+sudo docker build -t fetch:1.1.2 . 
+sudo docker tag fetch:1.1.2 226228012207.dkr.ecr.us-east-1.amazonaws.com/opensearch-exporter:1.1.2
+sudo docker tag fetch:1.1.2 226228012207.dkr.ecr.us-east-1.amazonaws.com/opensearch-exporter:latest
 aws ecr get-login-password --region us-east-1 | sudo docker login --username AWS --password-stdin 226228012207.dkr.ecr.us-east-1.amazonaws.com
-sudo docker push 226228012207.dkr.ecr.us-east-1.amazonaws.com/opensearch-exporter:1.1.0
+sudo docker push 226228012207.dkr.ecr.us-east-1.amazonaws.com/opensearch-exporter:1.1.2
 sudo docker push 226228012207.dkr.ecr.us-east-1.amazonaws.com/opensearch-exporter:latest
 
 # restart deployment
-kubectl delete -f k8s/Deployment.yaml 
-kubectl apply -f k8s/Deployment.yaml 
+kubectl delete deploy opensearch-exporter-deployment -n mantis-system
+kubectl apply -f k8s/exporter.yaml 
 kubectl get pods -n mantis-system | grep opensearch
 # log into pod
 kubectl exec -it opensearch-exporter-deployment-5564ffb9f6-jfl6x -n mantis-system -- bash

@@ -41,7 +41,7 @@ spec:
         - name: opensearch_index
           value: "ops-logs-*"
         - name: opensearch_host
-          value: "logs.testing.perception-point.io"
+          value: "logs.perception-point.io"
         - name: opensearch_port
           value: "443"
         resources:
