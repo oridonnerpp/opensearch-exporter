@@ -1,5 +1,6 @@
+from prometheus_client import gc_collector, platform_collector, process_collector
 from botocore.exceptions import NoCredentialsError, PartialCredentialsError
-from prometheus_client import Counter, generate_latest, REGISTRY, Gauge
+from prometheus_client import Counter, generate_latest, REGISTRY, Gauge, CollectorRegistry
 from apscheduler.schedulers.background import BackgroundScheduler
 from opensearchpy import OpenSearch, RequestsHttpConnection
 from opensearchpy.exceptions import AuthorizationException
@@ -100,10 +101,8 @@ query = {
 }
 
 
-
 # Flask
 app = Flask(__name__)
-
 
 def fetch_data():
     session = boto3.Session()
@@ -190,6 +189,13 @@ def fetch_data():
     print(f"============================== Start Time Str: {start_time_str} ================================")
     print(f"============================== End Time Str: {end_time_str} ================================")
     print(f"============================== Query: {query} ================================")
+
+    custom_metrics = []
+    collectors = list(REGISTRY._collector_to_names.keys())
+    for collector in collectors:
+        if isinstance(collector, Gauge):  
+            custom_metrics.append(collector)
+
     result = client.search(index=opensearch_index, body=query)
     buckets = result['aggregations']['2']['buckets']
     for bucket in buckets:
@@ -203,6 +209,22 @@ def fetch_data():
         function_count = bucket['doc_count']
         FUNCTION_COUNT_GUAGE.labels(function=function_label_key).set(function_count)
     LAST_FETCH_TIME.set(int(end_time.timestamp()))
+    
+    # Unregister custom collectors.
+    for collector in collectors:
+        REGISTRY.unregister(collector)
+
+    # Re-register default collectors.
+    process_collector.ProcessCollector()
+    platform_collector.PlatformCollector()
+    gc_collector.GCCollector()
+
+    # Re-register custom collectors
+    for metric in custom_metrics:
+        REGISTRY.register(metric)
+
+
+
 
 
 # Register the error handler
@@ -213,7 +235,6 @@ def handle_error(error):
 @app.route('/metrics')
 def metrics():
     REQUEST_COUNT.inc()
-    fetch_data()
     if hasattr(g, 'exception'):
         return g.exception, 500
     else:

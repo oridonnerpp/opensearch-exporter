@@ -4,7 +4,7 @@ metadata:
   name: opensearch-exporter-service-account
   namespace: mantis-system
   annotations: 
-    eks.amazonaws.com/role-arn: arn:aws:iam::226228012207:role/mantis-system-opensearch-exporter-testing
+    eks.amazonaws.com/role-arn: arn:aws:iam::242428396081:role/mantis-system-opensearch-exporter-us
 ---
 apiVersion: apps/v1
 kind: Deployment
