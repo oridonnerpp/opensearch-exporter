@@ -1,0 +1,84 @@
+{
+    "took": 3077, 
+    "timed_out": "False", 
+    "_shards": 
+        {
+            "total": 2544, 
+            "successful": 2544, 
+            "skipped": 2496, 
+            "failed": 0
+        }, 
+    "hits": 
+        {
+            "total": 
+                {
+                    "value": 10000, 
+                    "relation": "gte"
+                }, 
+            "max_score": "None", 
+            "hits": []
+        }, 
+    "aggregations": 
+        {
+            "2": 
+                {
+                    "doc_count_error_upper_bound": 0, 
+                    "sum_other_doc_count": 0, 
+                    "buckets": 
+                        [
+                            {
+                                "key": "upload_scan_to_elasticsearch", 
+                                "doc_count": 204230, 
+                                "1": {
+                                        "value": 0.0016641967128341456
+                                    }, 
+                                "3": {
+                                        "values": 
+                                            {
+                                                "50.0": 0.0016386939406714228
+                                            }
+                                    }, 
+                                "4": {
+                                        "value": 0.052320003509521484
+                                        }, 
+                                "6": {
+                                        "hits": 
+                                            {
+                                                "total": 
+                                                    {
+                                                        "value": 46587, 
+                                                        "relation": "eq"
+                                                    }, 
+                                                "max_score": "None", 
+                                                "hits": 
+                                                    [
+                                                        {
+                                                            "_index": ".ds-ops-logs-data-stream-001566", 
+                                                            "_id": "6DpnfY0BC_UVRyIr1Fwv", 
+                                                            "_score": "None", 
+                                                            "_source": 
+                                                                {
+                                                                    "kubernetes": 
+                                                                        {
+                                                                            "container": 
+                                                                                {
+                                                                                    "name": "mantis-worker-email"
+                                                                                }
+                                                                        }
+                                                                }, 
+                                                            "fields": 
+                                                                {
+                                                                    "kubernetes.container.name": ["mantis-worker-email"]
+                                                                }, 
+                                                            "sort": [1707205970797]
+                                                        }
+                                                    ]
+                                            }
+
+                                        }
+
+                            }
+                        ]
+    }
+    }
+}

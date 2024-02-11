@@ -1,0 +1,42 @@
+[?1049h[22;0;0t[>4;2m[?1h=[?2004h[1;14r[?12h[?12l[22;2t[22;1t[27m[23m[29m[m[H[2J[?25l[14;1H"/tmp/kubectl-edit-47029327.yaml" 138 lines, 4061 bytes[1;1H# Please edit the object below. Lines beginning with a '#' will be ignored,
+# and an empty file will abort the edit. If an error occurs while saving this file will be
+# reopened with the relevant failures.
+#
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    kubernetes.io/psp: eks.privileged
+    prometheus.io/port: "8080"
+  creationTimestamp: "2024-01-09T09:11:10Z"
+  generateName: scaleops-admissions-bdf898ff5-
+  labels:[1;1H[?25h[?25l[14;1HType  :qa  and press <Enter> to exit Vim[14;41H[K[1;1H[?25h[?25l[?25h[?25l[?25h[?25l[?25h[?25l[?25h[?25l[?25h[?25l[?25h[?25l[?25h[?25l[?25h[?25l[?25h[?25l[?25h[?25h[?1049h[22;0;0t[>4;2m[?1h=[?2004h[?12h[?12l[27m[23m[29m[m[H[2J[?25l[1;1H# Please edit the object below. Lines beginning with a '#' will be ignored,
+# and an empty file will abort the edit. If an error occurs while saving this file will be
+# reopened with the relevant failures.
+#
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    kubernetes.io/psp: eks.privileged[1;1H[?25h[10;1H[?2004l[?1l>[>4;m[?1049l[23;0;0tVim: Caught deadly signal HUP
+Vim: Finished.
+[10;1H[23;2t[23;1t.kubernetes.io/instance: scaleops
+    app.kubernetes.io/name: scaleops-admissions
+    pod-template-hash: bdf898ff5
+    scaleops.sh: "true"
+  name: scaleops-admissions-bdf898ff5-9rgmm
+  namespace: scaleops-system
+  ownerReferences:
+  - apiVersion: apps/v1
+    blockOwnerDeletion: true[1;1H[?25h[23;1H
+[?2004l[?1l>[>4;m[?1049l[23;0;0t[?25h[?1049h[22;0;0t[>4;2m[?1h=[?2004h[?12h[?12l[27m[23m[29m[m[H[2J[?25l[1;1H# Please edit the object below. Lines beginning with a '#' will be ignored,
+# and an empty file will abort the edit. If an error occurs while saving this file will be
+# reopened with the relevant failures.
+#
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    kubernetes.io/psp: eks.privileged[1;1H[?25h[10;1H[?2004l[?1l>[>4;m[?1049l[23;0;0tVim: Caught deadly signal HUP
+Vim: Finished.
+[10;1H[23;2t[23;1t

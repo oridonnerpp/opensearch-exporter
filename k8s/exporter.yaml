@@ -44,6 +44,8 @@ spec:
           value: "logs.perception-point.io"
         - name: opensearch_port
           value: "443"
+        - name: opensearch_region
+          value: "{{ .Values.opensearchExporter.opensearchRegion }}"
         resources:
           limits:
             memory: "256Mi"

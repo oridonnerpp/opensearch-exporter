@@ -1,0 +1,127 @@
+{
+    "aggs": 
+        {
+            "2": 
+                {
+                    "terms": 
+                        {
+                            "field": "str_1", 
+                            "order": 
+                                {
+                                    "_key": "desc"
+                                }, 
+                            "size": 1000
+                        }, 
+                    "aggs": 
+                        {
+                            "1": 
+                                {
+                                    "avg": 
+                                        {
+                                            "field": "float_1"
+                                        }
+                                }, 
+                            "3": 
+                                {
+                                    "percentiles": 
+                                        {
+                                            "field": "float_1", 
+                                            "percents": [50]
+                                        }
+                                }, 
+                            "4": 
+                                {
+                                    "max": 
+                                        {
+                                            "field": "float_1"
+                                        }
+                                }, 
+                            "6": 
+                                {
+                                    "top_hits": 
+                                        {
+                                            "docvalue_fields": 
+                                                [
+                                                    {
+                                                        "field": "kubernetes.container.name"
+                                                    }
+                                                ], 
+                                            "_source": "kubernetes.container.name", 
+                                            "size": 1, 
+                                            "sort": 
+                                                [
+                                                    {
+                                                        "@timestamp": 
+                                                            {
+                                                                "order": "desc"
+                                                            }
+                                                    }
+                                                ]
+                                        }
+                                }
+                        }
+                }
+        }, 
+        "size": 0, 
+        "stored_fields": ["*"], 
+        "script_fields": {}, 
+        "docvalue_fields": 
+            [
+                {
+                    "field": "@timestamp", 
+                    "format": "date_time"
+                }, 
+                {
+                    "field": "log_date", 
+                    "format": "date_time"
+                }
+            ], 
+        "_source": 
+            {
+                "excludes": []
+            }, 
+        "query": 
+            {
+                "bool": 
+                    {
+                        "must": [], 
+                        "filter": 
+                            [
+                                {
+                                    "match_all": {}
+                                }, 
+                                {
+                                    "match_phrase": 
+                                        {
+                                            "action": "timer"
+                                        }
+                                }, 
+                                {
+                                    "match_phrase": 
+                                        {
+                                            "sample_type": "email"
+                                        }
+                                }, 
+                                {
+                                    "match_phrase": 
+                                        {
+                                            "kubernetes.namespace": "us"
+                                        }
+                                }, 
+                                {
+                                    "range": 
+                                        {
+                                            "@timestamp": 
+                                                {
+                                                    "gte": "2024-02-07T11:00:15.000Z", 
+                                                    "lte": "2024-02-07T12:00:15.000Z", 
+                                                    "format": "strict_date_optional_time"
+                                                }
+                                        }
+                                }
+                            ], 
+                        "should": [], 
+                    "must_not": []
+                }
+            }
+        }

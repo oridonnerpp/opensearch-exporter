@@ -1,0 +1,23 @@
+global: &g
+  tolerations:
+    - effect: NoSchedule
+      key: mantis/worker
+      operator: Exists
+
+recommender:
+  <<: *g
+updater:
+  <<: *g
+agent:
+  <<: *g
+admissions:
+  <<: *g
+dashboard:
+  <<: *g
+repo-updater:
+  <<: *g
+prometheus:
+  server:
+    <<: *g
+  kube-state-metrics:
+    <<: *g

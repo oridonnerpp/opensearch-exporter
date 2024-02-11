@@ -16,10 +16,10 @@ import os
 # Prometheus metrics
 REQUEST_COUNT = Counter('http_requests_total', 'Total HTTP Requests')
 LAST_FETCH_TIME = Gauge('last_fetch_time', 'Timestamp of the last OpenSearch data fetch')
-AVERAGE_FLOAT_1_GAUGE = Gauge('Average_float_1','Average float_1 value for scanning and start_remote_scan',['function'])
-MEDIAN_FLOAT_1_GAUGE = Gauge('Median_float_1', 'Median_float_1 gauge', ['function'])
-MAX_FLOAT_1_GAUGE = Gauge('Max_float_1', 'Max_float_1 gauge', ['function'])
-FUNCTION_COUNT_GUAGE = Gauge('function_count', 'Total number of function calls', ['function'])
+AVERAGE_FLOAT_1_GAUGE = Gauge('Average_float_1','Average float_1 value for scanning and start_remote_scan',['function', 'container_name'])
+MEDIAN_FLOAT_1_GAUGE = Gauge('Median_float_1', 'Median_float_1 gauge', ['function', 'container_name'])
+MAX_FLOAT_1_GAUGE = Gauge('Max_float_1', 'Max_float_1 gauge', ['function', 'container_name'])
+FUNCTION_COUNT_GUAGE = Gauge('function_count', 'Total number of function calls', ['function', 'container_name'])
 QUERY_TIME_RANGE = int(os.getenv('QUERY_TIME_RANGE', 60)) # minutes
 QUERY_TIME_LAG = int(os.getenv('QUERY_TIME_LAG', 30)) # minutes
 QUERY_TIME_REFRESH = int(os.getenv('QUERY_TIME_REFRESH', 10)) # seconds
@@ -27,10 +27,10 @@ QUERY_TIME_REFRESH = int(os.getenv('QUERY_TIME_REFRESH', 10)) # seconds
 # App Logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
 # OpenSearch Client
 global awsauth, session, credentials, client, query, opensearch_index, opensearch_host, opensearch_port, start_time, end_time
 opensearch_index = os.getenv('opensearch_index','ops-logs-*')
+opensearch_region = os.getenv('opensearch_region','us-east-1')
 opensearch_host = os.getenv('opensearch_host','logs.perception-point.io')
 opensearch_port = int(os.getenv('opensearch_port',443))
 start_time = datetime.utcnow() - timedelta(minutes=QUERY_TIME_LAG+QUERY_TIME_RANGE)
@@ -49,22 +49,38 @@ query = {
         },
         "aggs": {
             "1": {
-            "avg": {
-                "field": "float_1"
-            }
+                "avg": {
+                    "field": "float_1"
+                }
             },
             "3": {
-            "percentiles": {
-                "field": "float_1",
-                "percents": [
-                50
-                ]
-            }
+                "percentiles": {
+                    "field": "float_1",
+                    "percents": [50]
+                }
             },
             "4": {
-            "max": {
-                "field": "float_1"
-            }
+                "max": {
+                    "field": "float_1"
+                }
+            },
+            "6": {
+                "top_hits": {
+                    "docvalue_fields": [
+                        {
+                            "field": "kubernetes.container.name"
+                        }
+                    ],
+                    "_source": "kubernetes.container.name",
+                    "size": 1,
+                    "sort": [
+                            {
+                                "@timestamp": {
+                                    "order": "desc"
+                                    }
+                            }
+                        ]
+                }
             }
         }
         }
@@ -84,6 +100,7 @@ query = {
                 {"match_all": {}},
                 {"match_phrase": {"action": "timer"}},
                 {"match_phrase": {"sample_type": "email"}},
+                {"match_phrase": {"kubernetes.namespace": "us"}},
                 {
                     "range": {
                         "@timestamp": {
@@ -98,17 +115,14 @@ query = {
             "must_not": []
         }
     }
-}
-
-
+    }
 # Flask
 app = Flask(__name__)
 
 def fetch_data():
-    session = boto3.Session()
+    session = boto3.Session(region_name=opensearch_region)
     credentials = session.get_credentials()
     awsauth = AWS4Auth(credentials.access_key, credentials.secret_key, session.region_name, 'es', session_token=credentials.token)
-    print(f"============================== Refreshed Access Key: {credentials.access_key} ================================")        
     client = OpenSearch(
         hosts=[{'host': opensearch_host, 'port': opensearch_port}],
         use_ssl=True,
@@ -135,22 +149,38 @@ def fetch_data():
         },
         "aggs": {
             "1": {
-            "avg": {
-                "field": "float_1"
-            }
+                "avg": {
+                    "field": "float_1"
+                }
             },
             "3": {
-            "percentiles": {
-                "field": "float_1",
-                "percents": [
-                50
-                ]
-            }
+                "percentiles": {
+                    "field": "float_1",
+                    "percents": [50]
+                }
             },
             "4": {
-            "max": {
-                "field": "float_1"
-            }
+                "max": {
+                    "field": "float_1"
+                }
+            },
+            "6": {
+                "top_hits": {
+                    "docvalue_fields": [
+                        {
+                            "field": "kubernetes.container.name"
+                        }
+                    ],
+                    "_source": "kubernetes.container.name",
+                    "size": 1,
+                    "sort": [
+                            {
+                                "@timestamp": {
+                                    "order": "desc"
+                                    }
+                            }
+                        ]
+                }
             }
         }
         }
@@ -170,6 +200,7 @@ def fetch_data():
                 {"match_all": {}},
                 {"match_phrase": {"action": "timer"}},
                 {"match_phrase": {"sample_type": "email"}},
+                {"match_phrase": {"kubernetes.namespace": "us"}},
                 {
                     "range": {
                         "@timestamp": {
@@ -185,46 +216,29 @@ def fetch_data():
         }
     }
 }
-    print(f"============================== Now: {time_now} ============================")
-    print(f"============================== Start Time Str: {start_time_str} ================================")
-    print(f"============================== End Time Str: {end_time_str} ================================")
-    print(f"============================== Query: {query} ================================")
-
-    custom_metrics = []
-    collectors = list(REGISTRY._collector_to_names.keys())
-    for collector in collectors:
-        if isinstance(collector, Gauge):  
-            custom_metrics.append(collector)
+    logger.info("Starting data fetching process")
+    logger.info(f"============================== Refreshed Access Key: {credentials.access_key} ================================")        
+    logger.info(f"============================== Now: {time_now} ============================")
+    logger.info(f"============================== Start Time Str: {start_time_str} ================================")
+    logger.info(f"============================== End Time Str: {end_time_str} ================================")
+    logger.info(f"============================== Query: {query} ================================")
 
     result = client.search(index=opensearch_index, body=query)
     buckets = result['aggregations']['2']['buckets']
     for bucket in buckets:
+        container_label = bucket['6']['hits']['hits'][0]['_source']['kubernetes']['container']['name']
         function_label_key = bucket['key']
         average_float_1_value = bucket['1']['value']
-        AVERAGE_FLOAT_1_GAUGE.labels(function=function_label_key).set(average_float_1_value)
+        AVERAGE_FLOAT_1_GAUGE.labels(function=function_label_key, container_name=container_label).set(average_float_1_value)
         median_float_1_value = bucket['3']['values']['50.0']
-        MEDIAN_FLOAT_1_GAUGE.labels(function=function_label_key).set(median_float_1_value)
+        MEDIAN_FLOAT_1_GAUGE.labels(function=function_label_key, container_name=container_label).set(median_float_1_value)
         max_float_1_value = bucket['4']['value']
-        MAX_FLOAT_1_GAUGE.labels(function=function_label_key).set(max_float_1_value)
+        MAX_FLOAT_1_GAUGE.labels(function=function_label_key, container_name=container_label).set(max_float_1_value)
         function_count = bucket['doc_count']
-        FUNCTION_COUNT_GUAGE.labels(function=function_label_key).set(function_count)
+        FUNCTION_COUNT_GUAGE.labels(function=function_label_key, container_name=container_label).set(function_count)
+
     LAST_FETCH_TIME.set(int(end_time.timestamp()))
     
-    # Unregister custom collectors.
-    for collector in collectors:
-        REGISTRY.unregister(collector)
-
-    # Re-register default collectors.
-    process_collector.ProcessCollector()
-    platform_collector.PlatformCollector()
-    gc_collector.GCCollector()
-
-    # Re-register custom collectors
-    for metric in custom_metrics:
-        REGISTRY.register(metric)
-
-
-
 
 
 # Register the error handler
